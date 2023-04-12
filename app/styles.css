@@ -1,9 +1,9 @@
 .img {
-    width: 700px;
+    /* width: 700px; */
     height: 537px; 
-    /* width: 500px;
+    width: 500px;
     object-fit: cover; 
-    object-position: 0% 100% */
+    object-position: 0% 100%
 }
 
 .wrapper {
