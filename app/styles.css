@@ -1,0 +1,22 @@
+.img {
+    width: 700px;
+    height: 537px; 
+    /* width: 500px;
+    object-fit: cover; 
+    object-position: 0% 100% */
+}
+
+.wrapper {
+    display: flex;
+    width: 70%;
+    margin: auto;
+}
+
+.content {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+h1 {
+    text-align:center;
+}

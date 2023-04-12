@@ -1,0 +1,59 @@
+options:
+  requestedVerifyOption: VERIFIED
+  dynamic_substitutions: true
+  substitutionOption: ALLOW_LOOSE
+
+steps:
+  - id: "Build"
+    name: "gcr.io/cloud-builders/docker"
+    entrypoint: "/bin/bash"
+    dir: app
+    args:
+      - "-c"
+      - |
+        docker build -t $LOCATION-docker.pkg.dev/$PROJECT_ID/containers/app:$SHORT_SHA .
+  - name: "gcr.io/cloud-builders/docker"
+    id: "Push"
+    dir: "app"
+    waitFor:
+      - "Build"
+    entrypoint: bash
+    args:
+      - '-c'
+      - |-
+        echo "Pushing $LOCATION-docker.pkg.dev/$PROJECT_ID/containers/app:$SHORT_SHA"
+        docker push $LOCATION-docker.pkg.dev/$PROJECT_ID/containers/app:$SHORT_SHA
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "Create Cloud Deploy pipeline"
+    entrypoint: "sh"
+    waitFor:
+      - "Push"
+    args:
+      - "-c"
+      - |-
+        echo "Create Cloud Deploy pipeline"
+        sed -i s/{{LOCATION}}/$LOCATION/ clouddeploy.yaml
+        sed -i s/{{PROJECT_ID}}/$PROJECT_ID/ clouddeploy.yaml
+        gcloud deploy apply \
+          --file=clouddeploy.yaml \
+          --region=$LOCATION \
+          --project=$PROJECT_ID
+  - name: "gcr.io/cloud-builders/gcloud"
+    id: "Create Cloud Deploy release"
+    entrypoint: "sh"
+    waitFor:
+      - "Create Cloud Deploy pipeline"
+    args:
+      - "-c"
+      - |-
+        echo "Create Cloud Deploy release"
+        sed -i s/{{LOCATION}}/$LOCATION/ clouddeploy.yaml
+        sed -i s/{{PROJECT_ID}}/$PROJECT_ID/ clouddeploy.yaml
+        gcloud deploy releases create release-$SHORT_SHA \
+          --project=$PROJECT_ID \
+          --region=$LOCATION \
+          --delivery-pipeline=transform-montreal \
+          --images=app=$LOCATION-docker.pkg.dev/$PROJECT_ID/containers/app:$SHORT_SHA
+
+images:
+- '${LOCATION}-docker.pkg.dev/$PROJECT_ID/containers/app:$SHORT_SHA'

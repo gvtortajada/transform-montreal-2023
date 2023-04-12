@@ -1,0 +1,1 @@
+git add . && git commit -m "because I am lazy" && git push origin master

@@ -1,0 +1,5 @@
+infra/.terraform
+infra/.terraform.lock.hcl
+infra/cmd
+app/node_modules
+app/package-lock.json
